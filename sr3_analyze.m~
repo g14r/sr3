@@ -116,8 +116,8 @@ white = [255,255,255]/255;
 fs = 20; %default font size for all figures
 lw = 4; %4; %default line width for all figures
 ms = 10; %12; %default marker size for all figures
-rs = 0; %0:5; %[0,1,2,3,4,5,6]; %default repetition number subset (full range = 0:10; 0 = full set)
-maxRep = 3;%4; %3; % default ceiling level for repetition number (0 = no ceiling)
+rs = 0;%0:6; %[0,1,2,3,4,5,6]; %default repetition number subset (full range = 0:10; 0 = full set)
+maxRep = 4; %3; % default ceiling level for repetition number (0 = no ceiling)
 
 % styles
 style.reset;
@@ -346,7 +346,7 @@ switch (what)
         labels{1, end} = sprintf('%s+', labels{1, end}); xticklabels(labels);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
-        nq = 11; % number of quantiles
+        nq = 10; % number of quantiles
         [D.I,D.M,~] = split_data(D.ET, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0 & D.timingError==0 & D.exeType==1);
         T = tapply(D, {'SN', 'I', 'isRep'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
@@ -357,11 +357,10 @@ switch (what)
         
         subplot(2,2,3); title(''); hold on;
         plt.line(T.I, T.normET, 'split',T.isRep, 'style',isrepsty, 'leg',isrepleg);
-        xticklabels(linspace(0,100,nq));        
+        xticklabels(0:10:95);        
         xlabel('ET percentile (%)'); ylabel('ET (ms)');  set(gca,'fontsize',fs); axis square;
-        xlim([0.5 nq+0.5]);
+        xlim([0.8 nq+0.2]);
         ylim([420 1280]);
-        drawline(round(nq/2), 'dir','vert', 'linestyle','--');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         [D.I,D.M,~] = split_data(D.ET, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0 & D.timingError==0 & D.exeType==1);
@@ -376,10 +375,9 @@ switch (what)
         
         subplot(2,2,4); title(''); hold on;
         plt.line(T.I, (nanplus(T.normETs,-T.normETr)./T.normET)*100, 'style',darkgraysty);
-        xticklabels(linspace(0,100,nq));        
+        xticklabels(0:10:95);        
         xlabel('ET percentile (%)'); ylabel('Repetition difference (% of ET)');  set(gca,'fontsize',fs); axis square;
-        xlim([0.5 nq+0.5]);
-        drawline(round(nq/2), 'dir','vert', 'linestyle','--'); 
+        xlim([0.8 nq+0.2]);
         
         %         %-------------------------------------------------------------------------------------------------------------------------------------
         %         % Train
@@ -606,7 +604,7 @@ switch (what)
         %plt.match('y');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
-        nq = 11; % number of quantiles
+        nq = 10; % number of quantiles
         [D.I,D.M,~] = split_data(D.RT, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0 & D.timingError==0 & D.exeType==1);
         T = tapply(D, {'SN', 'I', 'isRep'}, ...
             {D.RT, 'nanmedian', 'name', 'RT'}, ...
@@ -617,29 +615,26 @@ switch (what)
         
         subplot(2,2,3); title(''); hold on;
         plt.line(T.I, T.normRT, 'split',T.isRep, 'style',isrepsty, 'leg',isrepleg);
-        xticklabels(linspace(0,100,nq));        
+        xticklabels(0:10:95);        
         xlabel('RT percentile (%)'); ylabel('RT (ms)');  set(gca,'fontsize',fs); axis square;
-        xlim([0.5 nq+0.5]);
+        xlim([0.8 nq+0.2]);
         ylim([300 800]);
-        drawline(round(nq/2), 'dir','vert', 'linestyle','--');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         [D.I,D.M,~] = split_data(D.RT, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0 & D.timingError==0 & D.exeType==1);
         T = tapply(D, {'SN', 'I'}, ...
-            {D.RT, 'nanmedian', 'name', 'RT'}, ...
             {D.RT, 'nanmedian', 'name', 'RTs', 'subset',D.isRep==0}, ...
             {D.RT, 'nanmedian', 'name', 'RTr', 'subset',D.isRep==1}, ...
             'subset',D.isError==0 & D.timingError==0 & D.exeType==1);
         
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
-        T = normData(T, {'RTs', 'RTr', 'RT'}, 'sub');
+        T = normData(T, {'RTs', 'RTr'}, 'sub');
         
         subplot(2,2,4); title(''); hold on;
-        plt.line(T.I, (nanplus(T.normRTs,-T.normRTr)./T.normRT)*100, 'style',darkgraysty);
-        xticklabels(linspace(0,100,nq));        
-        xlabel('RT percentile (%)'); ylabel('Repetition difference (% of RT)');  set(gca,'fontsize',fs); axis square;
-        xlim([0.5 nq+0.5]);
-        drawline(round(nq/2), 'dir','vert', 'linestyle','--'); 
+        plt.line(T.I, nanplus(T.normRTs,-T.normRTr), 'style',darkgraysty);
+        xticklabels(0:10:95);        
+        xlabel('RT percentile (%)'); ylabel('Repetition difference (ms)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.8 nq+0.2]);
         
         %         %-------------------------------------------------------------------------------------------------------------------------------------
         %         % Train
@@ -773,7 +768,7 @@ switch (what)
         subplot(2,2,2); title('Previous trial No-go (left), or Go (right)'); hold on;
         plt.line([T.nm1 T.I], T.normRT, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northwest');
         xticklabels(repmat(linspace(0,100,nq),1,2)); xlabel('RT percentile (%)'); ylabel('RT (ms)');  set(gca,'fontsize',fs); %axis square;
-        ylim([300 800]);
+        ylim([420 1280]);
         xt = xticks; drawline([xt(6),xt(17)], 'dir','vert', 'linestyle','--');
         xlim([xt(1)-0.5 xt(end)+0.5]);
         
@@ -794,6 +789,46 @@ switch (what)
         xticklabels(linspace(0,100,nq)); xlabel('RT percentile (%)'); ylabel('Repetition difference (% of RT)');  set(gca,'fontsize',fs); axis square;
         xt = xticks; xlim([xt(1)-0.5 xt(end)+0.5]);
         drawline(round(nq/2), 'dir','vert', 'linestyle','--'); drawline(0, 'dir','horz', 'linestyle',':');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        nq = 10; % number of quantiles
+        [D.I,D.M,~] = split_data(D.RT, 'split',[D.SN D.isRep D.nm1], 'numquant',nq, 'subset',D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
+        T = tapply(D, {'SN', 'I', 'nm1'}, ...
+            {D.RT, 'nanmedian', 'name', 'RTs', 'subset',D.isRep==0}, ...
+            {D.RT, 'nanmedian', 'name', 'RTr', 'subset',D.isRep==1}, ...
+            'subset',D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'RTs', 'RTr'}, 'sub');
+        
+        subplot(2,2,2); title(''); hold on;
+        plt.line(T.I, nanplus(T.normRTs,-T.normRTr), 'split',T.nm1, 'style',nm1sty, 'leg',nm1leg);
+        xticklabels(0:10:95);
+        xlabel('RT percentile (%)'); ylabel('Repetition difference (ms)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.8 nq+0.2]);
+        drawline(0, 'dir','horz', 'linestyle',':');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        nq = 10; % number of quantiles
+        [D.I,D.M,~] = split_data(D.RT, 'split',[D.SN D.isRep D.nm1], 'numquant',nq, 'subset',D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
+        T = tapply(D, {'SN', 'I', 'isRep', 'nm1'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
+            'subset',D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'RT'}, 'sub');
+        
+        subplot(2,2,3); title('Previous trial No-go'); hold on;
+        plt.line(T.I, T.normRT, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'subset',T.nm1==1);
+        xticklabels(0:10:95);       
+        xlabel('RT percentile (%)'); ylabel('RT (ms)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.8 nq+0.2]); ylim([300 800]);
+        
+        subplot(2,2,4); title('Previous trial Go'); hold on;
+        plt.line(T.I, T.normRT, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'subset',T.nm1==2);
+        xticklabels(0:10:95);        
+        xlabel('RT percentile (%)'); ylabel('RT (ms)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.8 nq+0.2]); ylim([300 800]);
         
         % out
         D.T=T; %incorporate the sub-structures as fields of main structure
@@ -1371,7 +1406,7 @@ switch (what)
         %[x1, y1, e1] = plt.bar(T.sft, T.normET, 'style',blacksty);
         [~, y, ~] = plt.bar(T.sft, T.normET, 'style',boxplotsty, 'dir','horz');
         xlabel('Execution time (ms)'); ylabel(''); set(gca,'fontsize',fs); axis square;
-        yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
+        yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); %xlim([660, 840]);
         drawline(y(1), 'dir','vert', 'linestyle',':', 'color','k');
         %drawline(y(2), 'dir','vert', 'linestyle',':', 'color','k');
         drawline(y(end), 'dir','vert', 'linestyle',':', 'color','k');
@@ -1389,20 +1424,20 @@ switch (what)
         %         ttest(T.ET(T.sft==-1), T.ET(T.sft==23), 2, 'independent');
         %         ttest(T.ET(T.sft==-1), T.ET(T.sft==123), 2, 'paired');
         
-        %-------------------------------------------------------------------------------------------------------------------------------------
+        %         %-------------------------------------------------------------------------------------------------------------------------------------
+        %         %
+        %         T = tapply(D, {'SN', 'sft', 'nm1'}, ...
+        %             {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ... & D.sft>=0}, ...
+        %             'subset', D.isError==0 & D.timingError==0 );%& D.repNum<2);
         %
-        T = tapply(D, {'SN', 'sft', 'nm1'}, ...
-            {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ... & D.sft>=0}, ...
-            'subset', D.isError==0 & D.timingError==0 & D.repNum<2);
-        
-        % normalize data to remove between-subject variability (i.e. plot within-subject standard error)
-        T = normData(T, {'ET'}, 'sub');
-        
-        subplot(2,2,2);
-        plt.bar(T.sft, T.normET, 'split',T.nm1, 'style',nm1sty, 'leg',nm1leg, 'leglocation','southeast', 'dir','horz');
-        xlabel('ET (ms)'); ylabel(''); set(gca,'fontsize',fs); axis square;
-        yt = yticks; yticks([sum(yt(1:2))/2, sum(yt(3:4))/2, sum(yt(5:6))/2, sum(yt(7:8))/2, sum(yt(9:10))/2, sum(yt(11:12))/2, sum(yt(13:14))/2, sum(yt(15:16))/2]);
-        yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
+        %         % normalize data to remove between-subject variability (i.e. plot within-subject standard error)
+        %         T = normData(T, {'ET'}, 'sub');
+        %
+        %         subplot(2,2,2);
+        %         plt.bar(T.sft, T.normET, 'split',T.nm1, 'style',nm1sty, 'leg',nm1leg, 'leglocation','southeast', 'dir','horz');
+        %         xlabel('ET (ms)'); ylabel(''); set(gca,'fontsize',fs); axis square;
+        %         yt = yticks; yticks([sum(yt(1:2))/2, sum(yt(3:4))/2, sum(yt(5:6))/2, sum(yt(7:8))/2, sum(yt(9:10))/2, sum(yt(11:12))/2, sum(yt(13:14))/2, sum(yt(15:16))/2]);
+        %         yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
         
         % stats
         %[t,p] = ttest(T.ET(T.sft==0), T.ET(T.sft==3), 2, 'independent');

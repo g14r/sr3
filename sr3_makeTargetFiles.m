@@ -103,9 +103,11 @@ for t = 1 : trials
             % the first number corresponds to whether the current trial n is a repetition (1) or not (0),
             % the second number corresponds to whether the n-1 trial was a go (1) or a nogo (0),
             % the third number corresponds to whether the current trial n is a go (1) or a nogo (0)
+            % -------- 111 or 110 -------- 
             B.repType(t,1) = str2double( num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d')); % repetition(1), preceded by a go(1), current go(1) or nogo(0)
             %B.repType{t,1} = num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d'); % repetition(1), preceded by a go(1), current go(1) or nogo(0)
         else % previous trial was a nogo
+            % -------- 101 or 100 --------
             B.repType(t,1) = str2double( num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d')); % repetition(1), preceded by a nogo(0), current go(1) or nogo(0)
             %B.repType{t,1} = num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d'); % repetition(1), preceded by a nogo(0), current go(1) or nogo(0)
         end
@@ -120,13 +122,16 @@ for t = 1 : trials
             % the first number corresponds to whether the current trial n is a repetition (1) or not (0),
             % the second number corresponds to whether the n-1 trial was a go (1) or a nogo (0),
             % the third number corresponds to whether the current trial n is a go (1) or a nogo (0)
+            % -------- 011 or 010 -------- 
             B.repType(t,1) = str2double( num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d')); % switch(0), preceded by a go(1), current go(1) or nogo(0);
             %B.repType{t,1} = num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d'); % switch(0), preceded by a go(1), current go(1) or nogo(0);
         else % previous trial was a nogo
             if t == 1 % the first trial is by definition always preceded by a nogo
+                % -------- 001 or 000 -------- 
                 B.repType(t,1) = str2double( num2str([B.isRep(t,1), 0, B.exeType(t,1)], '%d%d%d')); % switch(0), preceded by a nogo(0), current go(1) or nogo(0);
                 %B.repType{t,1} = num2str([B.isRep(t,1), 0, B.exeType(t,1)], '%d%d%d'); % switch(0), preceded by a nogo(0), current go(1) or nogo(0);
             else
+                % -------- 001 or 000 -------- 
                 B.repType(t,1) = str2double( num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d')); % switch(0), preceded by a nogo(0), current go(1) or nogo(0);
                 %B.repType{t,1} = num2str([B.isRep(t,1), B.exeType(t-1,1), B.exeType(t,1)], '%d%d%d'); % switch(0), preceded by a nogo(0), current go(1) or nogo(0);
             end
