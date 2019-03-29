@@ -75,7 +75,7 @@ if ~exist(pathToAnalyze, 'dir'); mkdir(pathToAnalyze); end % if it doesn't exist
 
 % subjects
 % incomplete: 's17', 's22', 's27', 's34', 's39'
-% high-error: 's01', 's08', 's31'
+% % high-error: 's01', 's08', 's31'
 subj = {
     's01', 's02', 's03', 's04', 's05', 's06', 's07', 's08', 's09', 's10', ...
     's11', 's12', 's13', 's14', 's15', 's16',        's18', 's19', 's20', ...
@@ -156,11 +156,11 @@ switch (what)
             
             %-------------------------------------------------------------------------------------------------------------------------------------
             % add N-1 info
-            D.nm1 = zeros(numel(D.repType), 1); % n-1 exeType flag: 1=go, 0=nogo
-            D.nm1(D.repType==111) = 1+1;        % seq rep,    n-1 go,       go
-            D.nm1(D.repType==011) = 1+1;        % seq switch, n-1 go,       go
-            D.nm1(D.repType==101) = 0+1;        % seq rep,    n-1 nogo,     go
-            D.nm1(D.repType==001) = 0+1;        % seq switch, n-1 nogo,     go
+            D.nm1 = zeros(numel(D.repType), 1); % n-1 exeType flag: 2=go, 1=nogo, 0=current nogo
+            D.nm1(D.repType==111) = 2;        % seq rep,    n-1 go,       go
+            D.nm1(D.repType==011) = 2;        % seq switch, n-1 go,       go
+            D.nm1(D.repType==101) = 1;        % seq rep,    n-1 nogo,     go
+            D.nm1(D.repType==001) = 1;        % seq switch, n-1 nogo,     go
             
             B = [];
             for b = 1:max(D.BN)
@@ -301,13 +301,6 @@ switch (what)
         %[x_coord, y, e] = barplot(T.isRep, T.normET, 'linewidth',lw, 'errorwidth',lw, 'capwidth',0);
         plt.box(T.isRep, T.normET, 'style',boxplotsty);
         
-        % stats
-        ttest(T.ET(T.isRep==0), T.ET(T.isRep==1), 2, 'paired');
-        %[t, p] = ttest(T.ET(T.isRep==0), T.ET(T.isRep==1), 2, 'paired');
-        %         text(x_coord(1), max(y)+sum(e)*10, sprintf('t = %2.2f, p < %2.3f', t, p), 'fontsize',fs);
-        
-        %D1 = D; D1.repNum(D1.repNum >= 1) = 1; %D1.repNum(D1.repNum == 1) = x_coord(2); D1.repNum(D1.repNum == 0) = x_coord(1);
-        %T = tapply(D1, {'SN', 'repNum'}, {D1.ET, 'nanmedian', 'name', 'ET'}, 'subset', D1.isError==0 & D1.timingError==0 & D1.exeType==1); T = normData(T, {'ET'}, 'sub');
         T.isRep(T.isRep == 1) = 2; T.isRep(T.isRep == 0) = 1;
         hold on;
         plt.line(T.isRep, T.normET, 'plotfcn','mean', 'split', T.SN, 'errorbars','none', 'style',lightgraysty, 'leg','off');
@@ -315,6 +308,9 @@ switch (what)
         plt.line(T.isRep, T.normET, 'plotfcn','mean', 'errorbars','plusminus', 'style',blacksty, 'leg','off');
         xticklabels({'Switch', 'Repetition'}); ylabel('Execution time (ms)'); set(gca,'fontsize',fs); axis square;
         %ylim([690 800]);
+        
+        % stats
+        ttest(T.ET(T.isRep==1), T.ET(T.isRep==2), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Rep num
@@ -340,10 +336,15 @@ switch (what)
         [~,~] = plt.line(T.repNum, T.normET, 'plotfcn','mean', 'errorbars','shade', 'style',darkgraysty, 'leg',{'Group median'},  'leglocation','northeast');
         xlabel('Repetition number'); ylabel('ET (ms)'); set(gca,'fontsize',fs); axis square; 
         %ylim([690 800]);
-        %plt.match('y')
+        plt.match('y')
         labels = cell(1, max(D.repNum)+1); labels{1, 1} = 'Switch';
         for l = 1 : max(D.repNum); labels{1, l+1} = num2str(l); end
         labels{1, end} = sprintf('%s+', labels{1, end}); xticklabels(labels);
+        
+        % stats
+        ttest(T.ET(T.repNum==0), T.ET(T.repNum==1), 2, 'paired');
+        ttest(T.ET(T.repNum==1), T.ET(T.repNum==2), 2, 'paired');
+        ttest(T.ET(T.repNum==2), T.ET(T.repNum==3), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         nq = 11; % number of quantiles
@@ -472,7 +473,7 @@ switch (what)
         % box plot
         T = tapply(D, {'SN', 'isRep', 'nm1'}, ...
             {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ...
-            'subset', D.isError==0 & D.timingError==0 & D.nm1>0 & D.repNum<2);
+            'subset', D.isError==0 & D.timingError==0 & D.repNum<2);
         
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
         T = normData(T, {'ET'}, 'sub');
@@ -731,8 +732,8 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % box plot
         T = tapply(D, {'SN', 'isRep', 'nm1'}, ...
-            {D.RT, 'nanmedian', 'name', 'RT', 'subset', D.exeType == 1}, ...
-            'subset', D.isError==0 & D.timingError==0 & D.nm1>0 & D.repNum<2);
+            {D.RT, 'nanmean', 'name', 'RT'}, ...
+            'subset', D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
         
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
         T = normData(T, {'RT'}, 'sub');
@@ -1096,6 +1097,7 @@ switch (what)
             {D.IPI_2, 'nanmedian','name','IPI_2'},...
             {D.IPI_3, 'nanmedian','name','IPI_3'},...
             'subset', D.isError==0 & D.timingError==0 & D.exeType==1);
+        
         for i = 1:size(D.IPI, 2)
             T.IPI(:,i) = eval( sprintf('T.IPI_%d', i));
             T = rmfield(T,sprintf('IPI_%d', i));
@@ -1119,8 +1121,13 @@ switch (what)
         plt.line(T.IPInum, T.normIPI, 'plotfcn','mean', 'split',T.isRep, 'errorbars','shade','style',isrepsty, 'leg',isrepleg);
         xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
         xlim([0.5, 3.5]);
-        ylim([130, 270]);
+        %ylim([130, 270]);
         axis square;
+        
+        % stats
+        ttest(T.IPI(T.IPInum==1 & T.isRep==0), T.IPI(T.IPInum==1 & T.isRep==1), 2, 'paired');
+        ttest(T.IPI(T.IPInum==2 & T.isRep==0), T.IPI(T.IPInum==2 & T.isRep==1), 2, 'paired');
+        ttest(T.IPI(T.IPInum==3 & T.isRep==0), T.IPI(T.IPInum==3 & T.isRep==1), 2, 'paired');
         
         %         h = figure; [~,y] = plt.line(T.IPInum, T.normIPI, 'split',T.isRep); close(h);
         %         T.pctIPI = zeros(numel(T.IPI), 1);
@@ -1145,8 +1152,8 @@ switch (what)
         T=tapply(D, {'SN', 'isRep', 'nm1'},...
             {D.IPI_1, 'nanmedian','name','IPI_1'},...
             {D.IPI_2, 'nanmedian','name','IPI_2'},...
-            {D.IPI_3, 'nanmedian','name','IPI_3'},...
-            'subset', D.isError==0 & D.timingError==0 & D.exeType==1 & D.nm1>0 );%& D.repNum<2);
+            {D.IPI_3, 'nanmedian','name','IPI_3'},...   
+            'subset', D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
         
         % normalize data to remove between-subject variability (i.e. plot within-subject standard error)
         T = normData(T, {'IPI_1', 'IPI_2', 'IPI_3'}, 'sub');
@@ -1154,9 +1161,14 @@ switch (what)
         subplot(2,2,2); hold on;
         plt.box([[ones(numel(T.nm1),1)*1; ones(numel(T.nm1),1)*2; ones(numel(T.nm1),1)*3], [T.nm1;T.nm1;T.nm1]], [T.normIPI_1;T.normIPI_2;T.normIPI_3], 'split',[T.isRep; T.isRep; T.isRep], 'style',isrepstybox, 'leg',isrepleg, 'leglocation','northeast');
         axis square;
-        ylim([130, 270]);
+        %ylim([130, 270]);
         xt = xticks; xticks([sum(xt(1:2))/2 sum(xt(3:4))/2 sum(xt(5:6))/2 sum(xt(7:8))/2 sum(xt(9:10))/2 sum(xt(11:12))/2]); xticklabels(repmat({'No-go', 'Go'}, 1,3));
         xlabel('Previous trial'); ylabel('IPI (ms)'); set(gca,'fontsize',fs);
+        
+        % stats
+        T.ANOVA_IPI1 = anovaMixed(T.IPI_1, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
+        T.ANOVA_IPI2 = anovaMixed(T.IPI_2, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
+        T.ANOVA_IPI3 = anovaMixed(T.IPI_3, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
         
         %         subplot(2,2,2); title(''); hold on;
         %         %         [x, ~, ~] = plt.bar(T.isRep, T.normIPI_1, 'split',T.nm1, 'style',nm1sty, 'leg',nm1leg, 'leglocation','northeast');
@@ -1208,11 +1220,6 @@ switch (what)
         %         [x, ~, ~] = plt.bar(T.nm1, T.normIPI_3, 'split',T.isRep, 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
         %         xlabel('N-1'); ylabel('Third IPI (ms)'); set(gca,'fontsize',fs); axis square;
         %         xticklabels({'No-go', 'Go'}); xticks([(x(1)+x(2))/2, (x(3)+x(4))/2]); ylim([150, 250]);
-        
-        % stats
-        T.ANOVA_IPI1 = anovaMixed(T.IPI_1, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
-        T.ANOVA_IPI2 = anovaMixed(T.IPI_2, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
-        T.ANOVA_IPI3 = anovaMixed(T.IPI_3, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
         
         % out
         D.T=T; %incorporate the sub-structures as fields of main structure

@@ -38,7 +38,7 @@ for t=trials
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% specific to sr3! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if strcmp(subj, 's09') && block == 8 % weird MOV file for subj 9 at block 8, missing trials, missing time points, not sure what happened there
+        if strcmp(subj, 's09') && block == 8 || (strcmp(subj, 's40') && block == 2) % weird MOV file for subj 9 at block 8, missing trials, missing time points, not sure what happened there
         else
             MOV=movload(fullfile(pathToData,sprintf('sr3_%s_%02d.mov',subj,block))); %load MOV file for this block
         end
@@ -50,7 +50,7 @@ for t=trials
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% specific to sr3! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if strcmp(subj, 's09') && block == 8 % weird MOV file for subj 9 at block 8, missing trials, missing time points, not sure what happened there
+    if strcmp(subj, 's09') && block == 8 || (strcmp(subj, 's40') && block == 2) % weird MOV file for subj 9 at block 8, missing trials, missing time points, not sure what happened there
         T = getrow(D, t);
         fNames = fieldnames(T);
         resp = [];
