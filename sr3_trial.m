@@ -33,9 +33,9 @@ if D.numPress==4
     pressTime=nan(1,D.numPress);
     relTime=nan(1,D.numPress);
     for press=1:D.numPress
-        %pressNum=['D.pressTime',num2str(press)];
-        %pressTime(press)=eval(pressNum); %time of press
-        pressTime(press)=time(find(force(:,RH(eval(['D.response',num2str(press)])))>=.98, 1, 'first')); %time of press
+        pressNum=['D.pressTime',num2str(press)];
+        pressTime(press)=eval(pressNum); %time of press
+        %pressTime(press)=time(find(force(:,RH(eval(['D.response',num2str(press)])))>=.98, 1, 'first')); %time of press
         relTime(press)=time(find(force(:,RH(eval(['D.response',num2str(press)])))>=.98, 1, 'last')); %time of release
         eval(['D.relTime',num2str(press),'=',num2str(relTime(press)),';']);
     end
@@ -48,9 +48,9 @@ else
     pressTime=nan(1,D.numPress);
     relTime=nan(1,D.numPress);
     for press=1:D.numPress
-        %pressNum=['D.pressTime',num2str(press)];
-        %pressTime(press)=eval(pressNum); %time of press
-        pressTime(press)=time(find(force(:,RH(eval(['D.response',num2str(press)])))>=.98, 1, 'first')); %time of press
+        pressNum=['D.pressTime',num2str(press)];
+        pressTime(press)=eval(pressNum); %time of press
+        %pressTime(press)=time(find(force(:,RH(eval(['D.response',num2str(press)])))>=.98, 1, 'first')); %time of press
         relTime(press)=time(find(force(:,RH(eval(['D.response',num2str(press)])))>=.98, 1, 'last')); %time of release
         eval(['D.relTime',num2str(press),'=',num2str(relTime(press)),';']);
     end
