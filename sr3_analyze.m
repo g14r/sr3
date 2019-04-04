@@ -127,6 +127,7 @@ isrepsty = style.custom({lightgray, darkgray}, 'markersize',ms, 'linewidth',lw, 
 lightgraysty = style.custom({lightgray}, 'markertype','none', 'linewidth',1);
 darkgraysty = style.custom({darkgray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 blacksty = style.custom({black}, 'markertype','none', 'linewidth',lw, 'linestyle','--','errorbars','plusminus', 'errorwidth',lw, 'errorcap',0);%, 'linestyle','none');
+graysty = style.custom({gray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 nm1sty = style.custom({cbs_pink, cbs_blue}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 sffsty = style.custom({lightgray, gray, darkgray}, 'markersize',ms, 'linewidth',lw);
 boxplotsty = style.custom({darkgray}, 'markertype','none', 'linewidth',lw);
@@ -384,41 +385,54 @@ switch (what)
         % stats
         ttest((T.ETs(T.I==1)-T.ETr(T.I==1)), 0, 2, 'onesample');
         
-        %         %-------------------------------------------------------------------------------------------------------------------------------------
-        %         % Train
-        %         T = tapply(D, {'SN', 'BN', 'isRep'}, ...
-        %             {D.ET, 'nanmedian', 'name', 'ET'}, ...
-        %             'subset', D.isError==0 & D.timingError==0 & D.exeType==1);
-        %
-        %         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
-        %         T = normData(T, {'ET'}, 'sub');
-        %
-        %         % make sure that you have one value per subject for each condition
-        %         % pivottable(T.isRep, T.SN, T.normET, 'length');
-        %
-        %         subplot(2,2,3); title('Training');
-        %         [~,~] = plt.line(T.BN, T.normET, 'split',[T.isRep], 'errorbars','shade', 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
-        %         xlabel('Block number'); ylabel('ET (ms)'); set(gca,'fontsize',fs); axis square; ylim([600 1000]);
-        %
-        %         %-------------------------------------------------------------------------------------------------------------------------------------
-        %         % Diff
-        %         T = tapply(D, {'SN', 'BN'}, ...
-        %             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset', D.isRep==0}, ...
-        %             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset', D.isRep==1}, ...
-        %             'subset', D.isError==0 & D.timingError==0 & D.exeType==1);
-        %
-        %         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
-        %         T = normData(T, {'ETswc', 'ETrep'}, 'sub');
-        %
-        %         % make sure that you have one value per subject for each condition
-        %         % pivottable(T.isRep, T.SN, T.normET, 'length');
-        %
-        %         subplot(2,2,4); title('Difference');
-        %         %[~,~] = plt.line(T.BN, (T.normETswc-T.normETrep), 'split',[T.SN], 'errorbars','shade', 'style',lightgraysty, 'leg','off', 'leglocation','southeast');
-        %         %hold on;
-        %         [~,~] = plt.line(T.BN, (T.normETswc-T.normETrep), 'split',[], 'errorbars','shade', 'style',blacksty, 'leg',{'Group median'},  'leglocation','southeast');
-        %         xlabel('Block number'); ylabel('Switch - Repetition ET (ms)'); set(gca,'fontsize',fs); axis square; ylim([-200 200]);
-        %         drawline(0,'dir','horz','linestyle','--','color',black);
+        % open figure
+        if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
+        set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        % Train
+        T = tapply(D, {'SN', 'BN', 'isRep'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            'subset', D.isError==0 & D.timingError==0 & D.exeType==1);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'ET'}, 'sub');
+        
+        % make sure that you have one value per subject for each condition
+        % pivottable(T.isRep, T.SN, T.normET, 'length');
+        
+        subplot(2,2,1); title('Training');
+        [~,~] = plt.line(T.BN, T.normET, 'split',[T.isRep], 'errorbars','shade', 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
+        xlabel('Block number'); ylabel('ET (ms)'); set(gca,'fontsize',fs); axis square; ylim([480 1020]); %ylim([600 1000]);
+        
+        % stats
+        ttest(T.ET(T.BN==1 & T.isRep==0), T.ET(T.BN==1 & T.isRep==1), 2, 'paired');
+        ttest(T.ET(T.BN==12 & T.isRep==0), T.ET(T.BN==12 & T.isRep==1), 2, 'paired');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        % Diff
+        T = tapply(D, {'SN', 'BN'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset', D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset', D.isRep==1}, ...
+            'subset', D.isError==0 & D.timingError==0 & D.exeType==1);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'ET', 'ETswc', 'ETrep'}, 'sub');
+        
+        % make sure that you have one value per subject for each condition
+        % pivottable(T.isRep, T.SN, T.normET, 'length');
+        
+        subplot(2,2,2); title('Difference');
+        %[~,~] = plt.line(T.BN, (T.normETswc-T.normETrep), 'split',[T.SN], 'errorbars','shade', 'style',lightgraysty, 'leg','off', 'leglocation','southeast');
+        %hold on;
+        [~,~] = plt.line(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
+        xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square; ylim([-2 8]); %ylim([-15 65]); %ylim([-200 200]);
+        drawline(0,'dir','horz','linestyle','--','color',black);
+        
+        % stats
+        delta = ((T.ETswc-T.ETrep)./T.ET)*100;
+        ttest(delta(T.BN==1), delta(T.BN==12), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % create summary tables for ACC
@@ -431,10 +445,6 @@ switch (what)
         
         % make sure that you have one value per subject for each condition
         % pivottable(T.day, T.BN, T.ACC, 'length');
-        
-        % open figure
-        if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
-        set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
         
         subplot(2,2,3); hold on;
         plt.box(T.isRep, T.normACC, 'style',boxplotsty);
@@ -1780,19 +1790,18 @@ switch (what)
             {D.ET,'nanmedian', 'name','ETrep', 'subset',D.isRep==1},...
             {D.ET,'nanmedian', 'name','ETswc', 'subset',D.isRep==0},...
             'subset', D.isError==0 & D.timingError==0 & D.exeType==1);
-        
+                
         %-------------------------------------------------------------------------------------------------------------------------------------
         % RT-repEff RT
         subplot(2,2,1);
-        plt.scatter(T.RT, T.RTswc-T.RTrep, 'style',darkgraysty, 'label',subj);
+        plt.scatter(T.RT, T.RTswc-T.RTrep, 'style',darkgraysty, 'label',subj, 'regression','linear');%, 'subset',~ismember(T.SN,[1,7,14,15]));
         xlabel('Reaction time (ms)'); ylabel('Repetition difference on RT (ms)'); set(gca,'fontsize',fs); axis square;
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % ET-repEff ET
         subplot(2,2,2);
-        %plt.scatter(T.ET, T.ETswc-T.ETrep, 'style',darkgraysty, 'label',subj);
-        delta = T.ETswc-T.ETrep;
-        [T.r2, T.b, T.t, T.p] = scatterplot(T.ET, delta, 'regression','linear');
+        %[r2, b, t, p] = plt.scatter(T.ET, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',darkgraysty, 'label',subj, 'regression','linear');%, 'subset',~ismember(T.SN,[1,7,14,15]));
+        plt.scatter(T.ET, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',darkgraysty, 'label',subj, 'regression','linear');%, 'subset',~ismember(T.SN,[1,7,14,15]));
         xlabel('Execution time (ms)'); ylabel('Repetition difference on ET (ms)'); set(gca,'fontsize',fs); axis square;
         
         %-------------------------------------------------------------------------------------------------------------------------------------
