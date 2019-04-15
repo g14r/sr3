@@ -426,8 +426,11 @@ switch (what)
         subplot(2,2,2); title('Difference');
         %[~,~] = plt.line(T.BN, (T.normETswc-T.normETrep), 'split',[T.SN], 'errorbars','shade', 'style',lightgraysty, 'leg','off', 'leglocation','southeast');
         %hold on;
-        [~,~] = plt.line(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
-        xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square; ylim([-2 8]); %ylim([-15 65]); %ylim([-200 200]);
+        
+        %[~,~] = plt.line(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
+        %[~,~] = plt.scatter(T.BN, (T.ETswc-T.ETrep), 'style',graysty, 'leg','skip');
+        [~,~] = plt.scatter(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip');
+        xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square; %ylim([-2 8]); %ylim([-15 65]); %ylim([-200 200]);
         drawline(0,'dir','horz','linestyle','--','color',black);
         
         % stats
