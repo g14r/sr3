@@ -127,7 +127,7 @@ isrepsty = style.custom({lightgray, darkgray}, 'markersize',ms, 'linewidth',lw, 
 lightgraysty = style.custom({lightgray}, 'markertype','none', 'linewidth',1);
 darkgraysty = style.custom({darkgray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 blacksty = style.custom({black}, 'markertype','none', 'linewidth',lw, 'linestyle','--','errorbars','plusminus', 'errorwidth',lw, 'errorcap',0);%, 'linestyle','none');
-graysty = style.custom({gray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
+graysty = style.custom({lightgray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 nm1sty = style.custom({cbs_pink, cbs_blue}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 sffsty = style.custom({lightgray, gray, darkgray}, 'markersize',ms, 'linewidth',lw);
 boxplotsty = style.custom({darkgray}, 'markertype','none', 'linewidth',lw);
@@ -427,10 +427,10 @@ switch (what)
         %[~,~] = plt.line(T.BN, (T.normETswc-T.normETrep), 'split',[T.SN], 'errorbars','shade', 'style',lightgraysty, 'leg','off', 'leglocation','southeast');
         %hold on;
         
-        %[~,~] = plt.line(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
-        %[~,~] = plt.scatter(T.BN, (T.ETswc-T.ETrep), 'style',graysty, 'leg','skip');
-        [~,~] = plt.scatter(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip');
-        xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square; %ylim([-2 8]); %ylim([-15 65]); %ylim([-200 200]);
+        [~,~] = plt.line(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
+        hold on;
+        [~,~] = plt.scatter(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',blacksty, 'leg','skip');
+        xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square; ylim([-2 8]); %ylim([-15 65]); %ylim([-200 200]);
         drawline(0,'dir','horz','linestyle','--','color',black);
         
         % stats
