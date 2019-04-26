@@ -577,7 +577,8 @@ switch (what)
         
         subplot(2,2,2); title('Previous trial No-go (left), or Go (right)'); hold on;
         plt.line([T.nm1 T.I], T.ET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northwest');
-        xticklabels(repmat(linspace(0,100,nq),1,2)); xlabel('ET percentile (%)'); ylabel('ET (ms)');  set(gca,'fontsize',fs); %axis square;
+        xticklabels(repmat(linspace(0,100,nq),1,2)); 
+        xlabel('ET percentile (%)'); ylabel('ET (ms)');  set(gca,'fontsize',fs); %axis square;
         ylim([420 1280]);
         xt = xticks; drawline([xt(6),xt(17)], 'dir','vert', 'linestyle','--');
         xlim([xt(1)-0.5 xt(end)+0.5]);
@@ -619,7 +620,8 @@ switch (what)
         
         subplot(2,2,4); title(''); hold on;
         plt.line(T.I, (nanplus(T.ETs,-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
-        xticklabels(linspace(0,100,nq)); xlabel('ET percentile (%)'); ylabel('Repetition difference (% of ET)');  set(gca,'fontsize',fs); axis square;
+        xticklabels(linspace(0,100,nq)); 
+        xlabel('ET percentile (%)'); ylabel('Repetition difference (% of ET)');  set(gca,'fontsize',fs); axis square;
         xt = xticks; xlim([xt(1)-0.5 xt(end)+0.5]);
         drawline(round(nq/2), 'dir','vert', 'linestyle','--'); drawline(0, 'dir','horz', 'linestyle',':');
         
