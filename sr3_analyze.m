@@ -8,14 +8,14 @@ function [varargout] = sr3_analyze(what, varargin)
 %                       sr3_analyze('all_subj', {'s01'});                       %pre-analysis: run the subject routine for selected subjects
 %                       [all_data] = sr3_analyze('all_data');                   %pre-analysis: create .mat file containing data from subjects in subj
 %
-%                       [D] = sr3_analyze('repEffect_ET');                      %group          analysis of repetition effect on execution time (ET)
-%                       [D] = sr3_analyze('repEffect_ET', 's01');               %single subject analysis of repetition effect on execution time (ET)
+%                       [D] = sr3_analyze('repEff_ET');                         %group          analysis of repetition effect on execution time (ET)
+%                       [D] = sr3_analyze('repEff_ET', 's01');                  %single subject analysis of repetition effect on execution time (ET)
 %
 %                       [D] = sr3_analyze('N-1_ET');                            %group          analysis of N-1 trial go/no-go on repetition effect for ET
 %                       [D] = sr3_analyze('N-1_ET', 's01');                     %single subject analysis of N-1 trial go/no-go on repetition effect for ET
 %
-%                       [D] = sr3_analyze('repEffect_RT');                      %group          analysis of repetition effect on execution time (RT)
-%                       [D] = sr3_analyze('repEffect_RT', 's01');               %single subject analysis of repetition effect on execution time (RT)
+%                       [D] = sr3_analyze('repEff_RT');                         %group          analysis of repetition effect on execution time (RT)
+%                       [D] = sr3_analyze('repEff_RT', 's01');                  %single subject analysis of repetition effect on execution time (RT)
 %
 %                       [D] = sr3_analyze('N-1_RT');                            %group          analysis of N-1 trial (go/no-go) on repetition effect for RT
 %                       [D] = sr3_analyze('N-1_RT', 's01');                     %single subject analysis of N-1 trial (go/no-go) on repetition effect for RT
@@ -75,13 +75,14 @@ if ~exist(pathToAnalyze, 'dir'); mkdir(pathToAnalyze); end % if it doesn't exist
 
 % subjects
 % incomplete: 's17', 's22', 's27', 's34', 's39'
-% % high-error: 's01', 's08', 's31'
+% high-error: 's01', 's08', 's31'
 subj = {
     's01', 's02', 's03', 's04', 's05', 's06', 's07', 's08', 's09', 's10', ...
     's11', 's12', 's13', 's14', 's15', 's16',        's18', 's19', 's20', ...
     's21',        's23', 's24', 's25', 's26',        's28', 's29', 's30', ...
     's31', 's32', 's33',        's35', 's36', 's37', 's38',        's40', ...
-    's41', 's42', 's43', 's44', 's45', 's46', 's47', 's48', 's49', 's50'};
+    's41', 's42', 's43', 's44', 's45', 's46', 's47', 's48', 's49', 's50'
+    };
 
 ns = numel(subj);
 subvec = zeros(1,ns);
@@ -117,7 +118,7 @@ fs = 20; %default font size for all figures
 lw = 4; %4; %default line width for all figures
 ms = 10; %12; %default marker size for all figures
 rs = 0; %0:5; %[0,1,2,3,4,5,6]; %default repetition number subset (full range = 0:10; 0 = full set)
-maxRep = 3;%4; %3; % default ceiling level for repetition number (0 = no ceiling)
+maxRep = 3; % default ceiling level for repetition number (0 = no ceiling)
 
 % styles
 style.reset;
@@ -271,7 +272,7 @@ switch (what)
         save( fullfile( pathToAnalyze, 'sr3_all_data.mat'), '-struct', 'all_data'); % save all_data.mat file
         varargout = {all_data};
         
-    case 'repEffect_ET' % analysis of repetition effect on ET
+    case 'repEff_ET' % analysis of repetition effect on ET
         if nargin>1 % load single subj data
             subj = varargin{1};
             D = load( fullfile(pathToData, sprintf('sr3_%s.mat', subj)));
@@ -286,7 +287,7 @@ switch (what)
         if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
         set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
         
-        %-------------------------------------------------------------------------------------------------------------------------------------
+        %%% figure 1 %-------------------------------------------------------------------------------------------------------------------------------------
         % Rep eff
         T = tapply(D, {'SN', 'isRep'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
@@ -307,10 +308,10 @@ switch (what)
         hold on;
         plt.line(T.isRep, T.normET, 'plotfcn','mean', 'errorbars','plusminus', 'style',blacksty, 'leg','off');
         xticklabels({'Switch', 'Repetition'}); ylabel('Execution time (ms)'); set(gca,'fontsize',fs); axis square;
-        %ylim([690 800]);
+        ylim([640 780]);
         
         % stats
-        ttest(T.ET(T.isRep==1), T.ET(T.isRep==2), 2, 'paired');
+        [T.t1,T.p1]=ttest(T.ET(T.isRep==1), T.ET(T.isRep==2), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Rep num
@@ -335,16 +336,16 @@ switch (what)
         %hold on;
         [~,~] = plt.line(T.repNum, T.normET, 'plotfcn','mean', 'errorbars','shade', 'style',darkgraysty, 'leg',{'Group median'},  'leglocation','northeast');
         xlabel('Repetition number'); ylabel('ET (ms)'); set(gca,'fontsize',fs); axis square;
-        %ylim([690 800]);
-        plt.match('y')
+        ylim([640 780]);
+        %plt.match('y')
         labels = cell(1, max(D.repNum)+1); labels{1, 1} = 'Switch';
         for l = 1 : max(D.repNum); labels{1, l+1} = num2str(l); end
         labels{1, end} = sprintf('%s+', labels{1, end}); xticklabels(labels);
         
         % stats
-        ttest(T.ET(T.repNum==0), T.ET(T.repNum==1), 2, 'paired');
-        ttest(T.ET(T.repNum==1), T.ET(T.repNum==2), 2, 'paired');
-        ttest(T.ET(T.repNum==2), T.ET(T.repNum==3), 2, 'paired');
+        [T.t2,T.p2]=ttest(T.ET(T.repNum==0), T.ET(T.repNum==1), 2, 'paired');
+        [T.t3,T.p3]=ttest(T.ET(T.repNum==1), T.ET(T.repNum==2), 2, 'paired');
+        [T.t4,T.p4]=ttest(T.ET(T.repNum==2), T.ET(T.repNum==3), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         nq = 11; % number of quantiles
@@ -389,7 +390,8 @@ switch (what)
         if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
         set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
         
-        %-------------------------------------------------------------------------------------------------------------------------------------
+        
+        %%% figure 2 -------------------------------------------------------------------------------------------------------------------------------------
         % Train
         T = tapply(D, {'SN', 'BN', 'isRep'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
@@ -404,6 +406,7 @@ switch (what)
         subplot(2,2,1); title('Training');
         [~,~] = plt.line(T.BN, T.normET, 'split',[T.isRep], 'errorbars','shade', 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
         xlabel('Block number'); ylabel('ET (ms)'); set(gca,'fontsize',fs); axis square; ylim([480 1020]); %ylim([600 1000]);
+        xlim([0 25]);
         
         % stats
         ttest(T.ET(T.BN==1 & T.isRep==0), T.ET(T.BN==1 & T.isRep==1), 2, 'paired');
@@ -427,10 +430,12 @@ switch (what)
         %[~,~] = plt.line(T.BN, (T.normETswc-T.normETrep), 'split',[T.SN], 'errorbars','shade', 'style',lightgraysty, 'leg','off', 'leglocation','southeast');
         %hold on;
         
-        [~,~] = plt.line(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
+        %[~,~] = plt.line(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
+        [~,~] = plt.line(T.BN, (nanplus(T.ETswc,-T.ETrep)./T.ET)*100, 'split',[], 'errorbars','shade', 'style',graysty, 'leg','skip');
         hold on;
-        [~,~] = plt.scatter(T.BN, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',blacksty, 'leg','skip');
-        xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square; ylim([-2 8]); %ylim([-15 65]); %ylim([-200 200]);
+        [~,~] = plt.scatter(T.BN, (nanplus(T.ETswc,-T.ETrep)./T.ET)*100, 'style',blacksty, 'leg','skip');
+        xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square; ylim([-1.5 7.5]); %ylim([-15 65]); %ylim([-200 200]);
+        xlim([0 25]);
         drawline(0,'dir','horz','linestyle','--','color',black);
         
         % stats
@@ -561,9 +566,9 @@ switch (what)
         xt = xticks; xticks([sum(xt(1:2))/2 sum(xt(3:4))/2]); xticklabels({'No-go', 'Go'});
         
         % stats
-        ttest(T.ET(T.nm1==1 & T.isRep==0), T.ET(T.nm1==1 & T.isRep==1), 2, 'paired');
-        ttest(T.ET(T.nm1==2 & T.isRep==0), T.ET(T.nm1==2 & T.isRep==1), 2, 'paired');
-        T.ANOVA = anovaMixed(T.ET, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
+        %ttest(T.ET(T.nm1==1 & T.isRep==0), T.ET(T.nm1==1 & T.isRep==1), 2, 'paired');
+        %ttest(T.ET(T.nm1==2 & T.isRep==0), T.ET(T.nm1==2 & T.isRep==1), 2, 'paired');
+        %T.ANOVA = anovaMixed(T.ET, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         nq = 11; % number of quantiles
@@ -576,7 +581,7 @@ switch (what)
         T = normData(T, {'ET'}, 'sub');
         
         subplot(2,2,2); title('Previous trial No-go (left), or Go (right)'); hold on;
-        plt.line([T.nm1 T.I], T.ET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northwest');
+        plt.line([T.nm1 T.I], T.normET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northwest');
         xticklabels(repmat(linspace(0,100,nq),1,2)); 
         xlabel('ET percentile (%)'); ylabel('ET (ms)');  set(gca,'fontsize',fs); %axis square;
         ylim([420 1280]);
@@ -587,7 +592,7 @@ switch (what)
         % box plot
         T = tapply(D, {'SN', 'isRep', 'nm1'}, ...
             {(1-D.isError)*100,'nanmean', 'name','ACC'}, ...
-            'subset',D.timingError==0 & D.exeType==1);
+            'subset',D.timingError==0 & D.exeType==1 & D.repNum<2);
         
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
         T = normData(T, {'ACC'}, 'sub');
@@ -602,12 +607,11 @@ switch (what)
         xt = xticks; xticks([sum(xt(1:2))/2 sum(xt(3:4))/2]); xticklabels({'No-go', 'Go'});
         
         % stats
-        ttest(T.ACC(T.nm1==1 & T.isRep==0), T.ACC(T.nm1==1 & T.isRep==1), 2, 'paired');
-        ttest(T.ACC(T.nm1==2 & T.isRep==0), T.ACC(T.nm1==2 & T.isRep==1), 2, 'paired');
-        T.ANOVA = anovaMixed(T.ACC, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
+        %ttest(T.ACC(T.nm1==1 & T.isRep==0), T.ACC(T.nm1==1 & T.isRep==1), 2, 'paired');
+        %ttest(T.ACC(T.nm1==2 & T.isRep==0), T.ACC(T.nm1==2 & T.isRep==1), 2, 'paired');
+        %T.ANOVA = anovaMixed(T.ACC, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
         
         %-------------------------------------------------------------------------------------------------------------------------------------
-        %nq = 11; % number of quantiles
         [D.I,D.M,~] = split_data(D.ET, 'split',[D.SN D.isRep D.nm1], 'numquant',nq, 'subset',D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
         T = tapply(D, {'SN', 'I', 'nm1'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
@@ -619,17 +623,26 @@ switch (what)
         T = normData(T, {'ETs', 'ETr', 'ET'}, 'sub');
         
         subplot(2,2,4); title(''); hold on;
-        plt.line(T.I, (nanplus(T.ETs,-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
+        plt.line(T.I, ((T.ETs-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
         xticklabels(linspace(0,100,nq)); 
         xlabel('ET percentile (%)'); ylabel('Repetition difference (% of ET)');  set(gca,'fontsize',fs); axis square;
-        xt = xticks; xlim([xt(1)-0.5 xt(end)+0.5]);
+        xt = xticks; xlim([xt(1)-0.5 xt(end)+0.5]); ylim([-5 9]);
         drawline(round(nq/2), 'dir','vert', 'linestyle','--'); drawline(0, 'dir','horz', 'linestyle',':');
+        
+        % stats
+        T = tapply(D, {'SN', 'nm1'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETs', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETr', 'subset',D.isRep==1}, ...
+            'subset',D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
+        [t1,p1]=ttest(((T.ETs(T.nm1==1)-T.ETr(T.nm1==1))./T.ET(T.nm1==1))*100, 0, 2, 'onesample');
+        [t2,p2]=ttest(((T.ETs(T.nm1==2)-T.ETr(T.nm1==2))./T.ET(T.nm1==2))*100, 0, 2, 'onesample');
         
         % out
         D.T=T; %incorporate the sub-structures as fields of main structure
         varargout={D}; %return main structure
         
-    case 'repEffect_RT' % analysis of repetition effect on execution time (RT)
+    case 'repEff_RT' % analysis of repetition effect on execution time (RT)
         if nargin>1 % load single subj data
             subj = varargin{1};
             D = load( fullfile(pathToData, sprintf('sr3_%s.mat', subj)));
@@ -659,15 +672,15 @@ switch (what)
         subplot(2,2,1); title('Repetition effect'); hold on;
         plt.box(T.isRep, T.normRT, 'style',boxplotsty);
         
-        % stats
-        ttest(T.RT(T.isRep==0), T.RT(T.isRep==1), 2, 'paired');
-        
         T.isRep(T.isRep == 1) = 2; T.isRep(T.isRep == 0) = 1;
         hold on;
         plt.line(T.isRep, T.normRT, 'plotfcn','mean', 'split',[T.SN], 'errorbars','', 'style',lightgraysty, 'leg','off');
         hold on;
         plt.line(T.isRep, T.normRT, 'plotfcn','mean', 'errorbars','plusminus', 'style',blacksty, 'leg','off');
-        xticklabels({'Switch', 'Repetition'}); ylabel('Reaction time (ms)'); set(gca,'fontsize',fs); axis square; ylim([360 540]);
+        xticklabels({'Switch', 'Repetition'}); ylabel('Reaction time (ms)'); set(gca,'fontsize',fs); axis square; ylim([410 490]);
+        
+        % stats
+        [T.t1,T.p1]=ttest(T.RT(T.isRep==1), T.RT(T.isRep==2), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Rep num
@@ -683,14 +696,16 @@ switch (what)
         % pivottable(T.repNum, T.SN, T.normRT, 'length');
         
         % stats
-        %ttest(T.RT(T.repNum==0), T.RT(T.repNum==4), 2, 'paired');
-        %ttest(T.RT(T.repNum==1), T.RT(T.repNum==4), 2, 'paired');
+        [T.t2,T.p2]=ttest(T.RT(T.repNum==0), T.RT(T.repNum==1), 2, 'paired');
+        [T.t3,T.p3]=ttest(T.RT(T.repNum==1), T.RT(T.repNum==2), 2, 'paired');
+        [T.t4,T.p4]=ttest(T.RT(T.repNum==2), T.RT(T.repNum==3), 2, 'paired');
+
         
         subplot(2,2,2); title('Repetition number');
         %[~,~] = plt.line(T.repNum, T.normRT, 'split',[T.SN], 'errorbars','shade', 'style',lightgraysty, 'leg','off',  'leglocation','northeast');
         %hold on;
         [~,~] = plt.line(T.repNum, T.normRT, 'plotfcn','mean', 'errorbars','shade', 'style',darkgraysty, 'leg',{'Group median'},  'leglocation','northeast');
-        xlabel('Repetition number'); ylabel('RT (ms)'); set(gca,'fontsize',fs); axis square; %ylim([360 540]);
+        xlabel('Repetition number'); ylabel('RT (ms)'); set(gca,'fontsize',fs); axis square; ylim([410 490]);
         labels = cell(1, max(D.repNum)+1); labels{1, 1} = 'Switch';
         for l = 1 : max(D.repNum); labels{1, l+1} = num2str(l); end
         labels{1, end} = sprintf('%s+', labels{1, end}); xticklabels(labels);
@@ -849,7 +864,10 @@ switch (what)
         xt = xticks; xticks([sum(xt(1:2))/2 sum(xt(3:4))/2]); xticklabels({'No-go', 'Go'});
         
         % stats
+        ttest(T.RT(T.nm1==1 & T.isRep==0), T.RT(T.nm1==1 & T.isRep==1), 2, 'paired');
+        ttest(T.RT(T.nm1==2 & T.isRep==0), T.RT(T.nm1==2 & T.isRep==1), 2, 'paired');
         T.ANOVA = anovaMixed(T.RT, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
+        
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         nq = 11; % number of quantiles
@@ -1208,7 +1226,7 @@ switch (what)
         set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
         
         subplot(2,2,1); title(''); hold on;
-        plt.line(T.IPInum, T.normIPI, 'plotfcn','mean', 'split',T.isRep, 'errorbars','shade','style',isrepsty, 'leg',isrepleg);
+        plt.line(T.IPInum, T.normIPI, 'plotfcn','median', 'split',T.isRep, 'errorbars','shade','style',isrepsty, 'leg',isrepleg);
         xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
         xlim([0.5, 3.5]);
         ylim([130, 270]);
@@ -1219,33 +1237,33 @@ switch (what)
         ttest(T.IPI(T.IPInum==2 & T.isRep==0), T.IPI(T.IPInum==2 & T.isRep==1), 2, 'paired');
         ttest(T.IPI(T.IPInum==3 & T.isRep==0), T.IPI(T.IPInum==3 & T.isRep==1), 2, 'paired');
         
-        %-------------------------------------------------------------------------------------------------------------------------------------
-        T = tapply(T, {'SN', 'IPInum'}, ...
-            {T.IPI, 'nanmedian', 'name', 'IPI'}, ...
-            {T.IPI, 'nanmedian', 'name', 'IPIs', 'subset',T.isRep==0}, ...
-            {T.IPI, 'nanmedian', 'name', 'IPIr', 'subset',T.isRep==1});
-        
-        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
-        T = normData(T, {'IPIs', 'IPIr', 'IPI'}, 'sub');
-        
-        subplot(2,2,3); title(''); hold on;
-        plt.box(T.IPInum, ((T.normIPIs-T.normIPIr)./T.normIPI)*100, 'style',boxplotsty);
-        hold on; plt.line(T.IPInum, ((T.normIPIs-T.normIPIr)./T.normIPI)*100, 'style',lightgraysty);
-        xlabel('Transition number'); ylabel('Repetition difference (% of IPI)'); set(gca,'fontsize',fs); axis square;
-        xlim([0.5, 3.5]); ylim([-11 21]);
-        drawline(0, 'dir','horz', 'linestyle',':');
-                
-        % stats
-        diff1 = T.IPIs(T.IPInum==1) - T.IPIr(T.IPInum==1);
-        diff2 = T.IPIs(T.IPInum==2) - T.IPIr(T.IPInum==2);
-        diff3 = T.IPIs(T.IPInum==3) - T.IPIr(T.IPInum==3);
-        %ttest(diff1, 0, 2, 'onesample');
-        %ttest(diff2, 0, 2, 'onesample');
-        %ttest(diff3, 0, 2, 'onesample');
-        %ttest(diff2, diff1, 2, 'paired');
-        ttest(diff2, diff3, 2, 'paired');
-        %ttest(diff3, diff1, 2, 'paired');
-        %anovaMixed((T.IPIs - T.IPIr), T.SN,'within', [T.IPInum], {'IPInum'});
+        %         %-------------------------------------------------------------------------------------------------------------------------------------
+        %         T = tapply(T, {'SN', 'IPInum'}, ...
+        %             {T.IPI, 'nanmedian', 'name', 'IPI'}, ...
+        %             {T.IPI, 'nanmedian', 'name', 'IPIs', 'subset',T.isRep==0}, ...
+        %             {T.IPI, 'nanmedian', 'name', 'IPIr', 'subset',T.isRep==1});
+        %
+        %         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        %         T = normData(T, {'IPIs', 'IPIr', 'IPI'}, 'sub');
+        %
+        %         subplot(2,2,3); title(''); hold on;
+        %         plt.box(T.IPInum, ((T.normIPIs-T.normIPIr)./T.normIPI)*100, 'style',boxplotsty);
+        %         hold on; plt.line(T.IPInum, ((T.normIPIs-T.normIPIr)./T.normIPI)*100, 'style',lightgraysty);
+        %         xlabel('Transition number'); ylabel('Repetition difference (% of IPI)'); set(gca,'fontsize',fs); axis square;
+        %         xlim([0.5, 3.5]); ylim([-11 21]);
+        %         drawline(0, 'dir','horz', 'linestyle',':');
+        %
+        %         % stats
+        %         %diff1 = T.IPIs(T.IPInum==1) - T.IPIr(T.IPInum==1);
+        %         diff2 = T.IPIs(T.IPInum==2) - T.IPIr(T.IPInum==2);
+        %         diff3 = T.IPIs(T.IPInum==3) - T.IPIr(T.IPInum==3);
+        %         %ttest(diff1, 0, 2, 'onesample');
+        %         %ttest(diff2, 0, 2, 'onesample');
+        %         %ttest(diff3, 0, 2, 'onesample');
+        %         %ttest(diff2, diff1, 2, 'paired');
+        %         ttest(diff2, diff3, 2, 'paired');
+        %         %ttest(diff3, diff1, 2, 'paired');
+        %         %anovaMixed((T.IPIs - T.IPIr), T.SN,'within', [T.IPInum], {'IPInum'});
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % N-1 IPI
@@ -1269,6 +1287,46 @@ switch (what)
         T.ANOVA_IPI1 = anovaMixed(T.IPI_1, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
         T.ANOVA_IPI2 = anovaMixed(T.IPI_2, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
         T.ANOVA_IPI3 = anovaMixed(T.IPI_3, T.SN,'within', [T.nm1, T.isRep], {'n-1','isRep'});
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        % N-1 IPI
+        % create summary table for IPI profile
+        T=tapply(D, {'SN', 'isRep', 'nm1'},...
+            {D.IPI_1, 'nanmedian','name','IPI_1'},...
+            {D.IPI_2, 'nanmedian','name','IPI_2'},...
+            {D.IPI_3, 'nanmedian','name','IPI_3'},...
+            'subset',D.isError==0 & D.timingError==0 & D.exeType==1 & D.repNum<2);
+        
+        for i = 1:size(D.IPI, 2)
+            T.IPI(:,i) = eval( sprintf('T.IPI_%d', i));
+            T = rmfield(T,sprintf('IPI_%d', i));
+            T.IPInum(:,i) = ones(size(T.SN, 1), 1) * i;
+            T.SN(:,i) = T.SN(:,1);
+            T.isRep(:,i) = T.isRep(:,1);
+            T.nm1(:,i) = T.nm1(:,1);
+        end
+        T.IPI       = reshape(T.IPI, size(T.IPI, 1) * size(T.IPI, 2), 1);
+        T.IPInum    = reshape(T.IPInum, size(T.IPInum, 1) * size(T.IPInum, 2), 1);
+        T.SN        = reshape(T.SN, size(T.SN, 1) * size(T.SN, 2), 1);
+        T.isRep     = reshape(T.isRep, size(T.isRep, 1) * size(T.isRep, 2), 1);
+        T.nm1       = reshape(T.nm1, size(T.nm1, 1) * size(T.nm1, 2), 1);
+        
+        % normalize IPI data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'IPI'}, 'sub');
+                
+        subplot(2,2,3); title('No-Go'); hold on;
+        plt.line(T.IPInum, T.normIPI, 'plotfcn','median', 'split',T.isRep, 'style',isrepsty, 'leg',isrepleg, 'subset',T.nm1==1);
+        xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
+        xlim([0.5, 3.5]);
+        ylim([145, 245]);
+        axis square;
+        
+        subplot(2,2,4); title('Go'); hold on;
+        plt.line(T.IPInum, T.normIPI, 'plotfcn','median', 'split',T.isRep, 'style',isrepsty, 'leg',isrepleg, 'subset',T.nm1==2);
+        xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
+        xlim([0.5, 3.5]);
+        ylim([145, 245]);
+        axis square;
         
         % out
         D.T=T; %incorporate the sub-structures as fields of main structure
@@ -1410,6 +1468,9 @@ switch (what)
         % select repetitions of interest
         if numel(rs)>1; D = getrow(D, ismember(D.repNum, rs)); end
         
+        % combine switch types
+        D.sft(D.sft==-1 | D.sft==0) = 0;
+        
         % open figure
         if nargin>1; figure('Name',sprintf('sft - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('sft - group (N=%d)',ns)); end
         set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
@@ -1417,7 +1478,7 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         %
         T = tapply(D, {'SN', 'sft'}, ...
-            {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ... & D.sft>=0}, ...
+            {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ...
             'subset', D.isError==0 & D.timingError==0);
         
         % normalize data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -1425,40 +1486,60 @@ switch (what)
         
         subplot(2,2,1);
         %[x1, y1, e1] = plt.bar(T.sft, T.normET, 'style',blacksty);
-        [~, y, ~] = plt.bar(T.sft, T.normET, 'style',boxplotsty, 'dir','horz');
+        [~, y, ~] = plt.bar(T.sft, T.ET, 'style',boxplotsty, 'dir','horz');
         xlabel('Execution time (ms)'); ylabel(''); set(gca,'fontsize',fs); axis square;
-        yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
+        %yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
+        yticklabels({'Swc', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
+        %yticklabels({'Swc', 'S1T', 'S3T', 'Rep'}); xlim([660, 840]);
         drawline(y(1), 'dir','vert', 'linestyle',':', 'color','k');
         %drawline(y(2), 'dir','vert', 'linestyle',':', 'color','k');
         drawline(y(end), 'dir','vert', 'linestyle',':', 'color','k');
         
-        %         % stats
-        %         ttest(T.ET(T.sft==-1), T.ET(T.sft==0), 2, 'paired');
-        %
-        %         ttest(T.ET(T.sft==0), T.ET(T.sft==3), 2, 'independent');
-        %         ttest(T.ET(T.sft==0), T.ET(T.sft==12), 2, 'independent');
-        %         ttest(T.ET(T.sft==0), T.ET(T.sft==23), 2, 'independent');
-        %         ttest(T.ET(T.sft==0), T.ET(T.sft==123), 2, 'paired');
-        %
-        %         ttest(T.ET(T.sft==-1), T.ET(T.sft==3), 2, 'independent');
-        %         ttest(T.ET(T.sft==-1), T.ET(T.sft==12), 2, 'independent');
-        %         ttest(T.ET(T.sft==-1), T.ET(T.sft==23), 2, 'independent');
-        %         ttest(T.ET(T.sft==-1), T.ET(T.sft==123), 2, 'paired');
+        % stats
         
+        [tab] = pivottable(T.SN, T.sft, T.ET, 'sum');
+        swc = tab(:,1);
+        s1t = tab(:,2);
+        s2t = tab(:,3);
+        s3t = tab(:,4);
+        %s12 = tab(:,5);
+        %s23 = tab(:,6);
+        %rep = tab(:,7);
+        
+        ttest(s1t(~isnan(s1t)), swc(~isnan(s1t)), 2, 'paired');
+        ttest(s2t(~isnan(s2t)), swc(~isnan(s2t)), 2, 'paired');
+        ttest(s3t(~isnan(s3t)), swc(~isnan(s3t)), 2, 'paired');
+                
+        % combine switch types
+        D.sft(D.sft==1 | D.sft==12) = 1;
+        D.sft(D.sft==23 | D.sft==3) = 3;
+        
+        T = tapply(D, {'SN', 'sft'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ...
+            'subset', D.isError==0 & D.timingError==0);
+        
+        [tab] = pivottable(T.SN, T.sft, T.ET, 'sum');
+        swc = tab(:,1);
+        s1t = tab(:,2);
+        s3t = tab(:,4);
+        
+        ttest(s1t(~isnan(s1t)), swc(~isnan(s1t)), 2, 'paired');
+        ttest(s3t(~isnan(s3t)), swc(~isnan(s3t)), 2, 'paired');
+                
         %-------------------------------------------------------------------------------------------------------------------------------------
         %
-        T = tapply(D, {'SN', 'sft', 'nm1'}, ...
-            {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ... & D.sft>=0}, ...
-            'subset', D.isError==0 & D.timingError==0 & D.repNum<2);
-        
-        % normalize data to remove between-subject variability (i.e. plot within-subject standard error)
-        T = normData(T, {'ET'}, 'sub');
-        
-        subplot(2,2,2);
-        plt.bar(T.sft, T.normET, 'split',T.nm1, 'style',nm1sty, 'leg',nm1leg, 'leglocation','southeast', 'dir','horz');
-        xlabel('ET (ms)'); ylabel(''); set(gca,'fontsize',fs); axis square;
-        yt = yticks; yticks([sum(yt(1:2))/2, sum(yt(3:4))/2, sum(yt(5:6))/2, sum(yt(7:8))/2, sum(yt(9:10))/2, sum(yt(11:12))/2, sum(yt(13:14))/2, sum(yt(15:16))/2]);
-        yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
+        %         T = tapply(D, {'SN', 'sft', 'nm1'}, ...
+        %             {D.ET, 'nanmedian', 'name', 'ET', 'subset', D.exeType == 1}, ... & D.sft>=0}, ...
+        %             'subset', D.isError==0 & D.timingError==0 & D.repNum<2);
+        %
+        %         % normalize data to remove between-subject variability (i.e. plot within-subject standard error)
+        %         T = normData(T, {'ET'}, 'sub');
+        %
+        %         subplot(2,2,2);
+        %         plt.bar(T.sft, T.normET, 'split',T.nm1, 'style',nm1sty, 'leg',nm1leg, 'leglocation','southeast', 'dir','horz');
+        %         xlabel('ET (ms)'); ylabel(''); set(gca,'fontsize',fs); axis square;
+        %         yt = yticks; yticks([sum(yt(1:2))/2, sum(yt(3:4))/2, sum(yt(5:6))/2, sum(yt(7:8))/2, sum(yt(9:10))/2, sum(yt(11:12))/2, sum(yt(13:14))/2, sum(yt(15:16))/2]);
+        %         yticklabels({'Swc', '0ST', 'S1T', 'S2T', 'S3T', 'S12T', 'S23T', 'Rep'}); xlim([660, 840]);
         
         % stats
         %[t,p] = ttest(T.ET(T.sft==0), T.ET(T.sft==3), 2, 'independent');
@@ -1805,8 +1886,7 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % ET-repEff ET
         subplot(2,2,2);
-        %[r2, b, t, p] = plt.scatter(T.ET, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',darkgraysty, 'label',subj, 'regression','linear');%, 'subset',~ismember(T.SN,[1,7,14,15]));
-        plt.scatter(T.ET, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',darkgraysty, 'label',subj, 'regression','linear');%, 'subset',~ismember(T.SN,[1,7,14,15]));
+        [T.r2, T.b, T.t, T.p] = plt.scatter(T.ET, ((T.ETswc-T.ETrep)./T.ET)*100, 'style',darkgraysty, 'label',subj, 'regression','linear');%, 'subset',~ismember(T.SN,[1,7,14,15]));
         xlabel('Execution time (ms)'); ylabel('Repetition difference on ET (ms)'); set(gca,'fontsize',fs); axis square;
         
         %-------------------------------------------------------------------------------------------------------------------------------------
