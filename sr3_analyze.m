@@ -689,11 +689,13 @@ switch (what)
         T = normData(T, {'ETs', 'ETr', 'ET'}, 'sub');
         
         subplot(2,2,4); title(''); hold on;
-        plt.line(T.I, ((T.ETs-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
+        [x,y]=plt.line(T.I, ((T.ETs-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
         xticklabels(linspace(0,100,nq));
         xlabel('ET percentile (%)'); ylabel('Repetition difference (% of ET)');  set(gca,'fontsize',fs); axis square;
         xt = xticks; xlim([xt(1)-0.5 xt(end)+0.5]); ylim([-5 9]);
         drawline(round(nq/2), 'dir','vert', 'linestyle','--'); drawline(0, 'dir','horz', 'linestyle',':');
+        
+        ttest(((T.ETs(T.nm1==2 & T.I==1)-T.ETr(T.nm1==2 & T.I==1))./T.ET(T.nm1==2 & T.I==1))*100, ((T.ETs(T.nm1==2 & T.I==11)-T.ETr(T.nm1==2 & T.I==11))./T.ET(T.nm1==2 & T.I==11))*100, 2, 'paired')
         
         % stats
         T = tapply(D, {'SN', 'nm1'}, ...
