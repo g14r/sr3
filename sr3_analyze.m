@@ -707,7 +707,8 @@ switch (what)
         T = normData(T, {'ETs', 'ETr', 'ET'}, 'sub');
         
         subplot(2,2,4); title(''); hold on;
-        [x,y]=plt.line(T.I, ((T.ETs-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
+        %[x,y]=plt.line(T.I, ((T.ETs-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
+        plt.line(T.I, ((T.ETs-T.ETr)./T.ET)*100, 'split',T.nm1, 'style',isrepsty, 'leg',nm1leg, 'leglocation','northwest');
         xticklabels(linspace(0,100,nq));
         xlabel('ET percentile (%)'); ylabel('Repetition difference (% of ET)');  set(gca,'fontsize',fs); axis square;
         xt = xticks; xlim([xt(1)-0.5 xt(end)+0.5]); ylim([-5 9]);
