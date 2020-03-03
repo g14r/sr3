@@ -65,6 +65,9 @@ function [varargout] = sr3_analyze(what, varargin)
 %                       [D] = sr3_analyze('repEff_scatter');                    %group          analysis of relationship between ET, RT and repetition effect
 %                       [D] = sr3_analyze('repEff_scatter', 's01');             %single subject analysis of relationship between ET, RT and repetition effect
 %
+%                       [D] = sr3_analyze('RT_group_comp');                     %group          analysis of group comparison between timing error penalty or not
+%                       [D] = sr3_analyze('RT_group_comp', 's01');              %single subject analysis of group comparison between timing error penalty or not
+%
 % --
 % gariani@uwo.ca - 2018.05.18
 
@@ -83,7 +86,7 @@ subj = {
     's01', 's02', 's03', 's04', 's05', 's06', 's07', 's08', 's09', 's10', ...
     's11', 's12', 's13', 's14', 's15', 's16',        's18', 's19', 's20', ...
     's21',        's23', 's24', 's25', 's26',        's28', 's29', 's30', ...
-    's31', 's32', 's33',        's35', 's36', 's37', 's38',        's40', ...
+    's31', 's32', 's33',        's35', 's36', 's37', 's38',        's40', ... % changed scoring system (no penalty for timing errors) from s31 to s50
     's41', 's42', 's43', 's44', 's45', 's46', 's47', 's48', 's49', 's50'
     };
 
@@ -187,7 +190,7 @@ switch (what)
                     %                         T.isRep(t) = 0;
                     %                     end
                     %                     T.repNum(t) = rn;
-
+                    
                     
                     if (T.isRep(t) == 1)
                         % repetition
@@ -2101,6 +2104,29 @@ switch (what)
         %plt.scatter(T.ET, T.RTswc-T.RTrep, 'style',darkgraysty, 'label',subj);
         xlabel('Execution time (ms)'); ylabel('Repetition difference (% of RT)'); set(gca,'fontsize',fs); axis square;
         drawline(0, 'dir','horz', 'linestyle',':');
+        
+        % out
+        D.T=T; %incorporate the sub-structures as fields of main structure
+        varargout={D}; %return main structure
+        
+    case 'RT_group_comp' % analysis of group comparison between timing error penalty or not
+        if nargin>1 % load single subj data
+            subj = varargin{1};
+            D = load( fullfile(pathToData, sprintf('sr3_%s.mat', subj)));
+        else % load group data
+            D = load( fullfile(pathToAnalyze, 'sr3_all_data.mat'));
+        end
+        
+        % select repetitions of interest
+        if numel(rs)>1; D = getrow(D, ismember(D.repNum, rs)); end
+        
+        T = tapply(D, {'SN'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT_G1', 'subset',D.SN<=30}, ... % group 1 (G1) has penalty for GO-anticipation timing errors (-1)
+            {D.RT, 'nanmedian', 'name', 'RT_G2', 'subset',D.SN> 30}, ... % group 2 (G2) does not have penalty for GO-anticipation timing errors (0)
+            'subset', D.isError==0 & D.timingError==0 & D.exeType==1);
+        
+        % stats
+        ttest(T.RT_G1, T.RT_G2, 2, 'independent')
         
         % out
         D.T=T; %incorporate the sub-structures as fields of main structure
