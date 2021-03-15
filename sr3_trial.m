@@ -6,7 +6,7 @@ function [D] = sr3_trial(MOV, D, fig, fig_name, varargin)
 %% extract data
 if (isempty(MOV))
     return;
-end;
+end
 %state=MOV(:,1);
 %absTime=MOV(:,2);
 %time=MOV(:,3);

@@ -1329,6 +1329,39 @@ switch (what)
         D.IPI=diff([D.pressTime1,D.pressTime2,D.pressTime3,D.pressTime4],1,2);
         D.IPI_1=D.IPI(:,1); D.IPI_2=D.IPI(:,2); D.IPI_3=D.IPI(:,3);
         
+        %%
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        % create summary table for IPI profile
+        T=tapply(D, {'SN', 'BN'},...
+            {D.IPI_1, 'nanmedian','name','IPI_1'},...
+            {D.IPI_2, 'nanmedian','name','IPI_2'},...
+            {D.IPI_3, 'nanmedian','name','IPI_3'},...
+            'subset',D.isError==0 & D.timingError==0 & D.exeType==1);
+        
+        for i = 1:size(D.IPI, 2)
+            T.IPI(:,i) = eval( sprintf('T.IPI_%d', i));
+            T = rmfield(T,sprintf('IPI_%d', i));
+            T.IPInum(:,i) = ones(size(T.SN, 1), 1) * i;
+            T.SN(:,i) = T.SN(:,1);
+            T.BN(:,i) = T.BN(:,1);
+        end
+        T.IPI = reshape(T.IPI, size(T.IPI, 1) * size(T.IPI, 2), 1);
+        T.IPInum = reshape(T.IPInum, size(T.IPInum, 1) * size(T.IPInum, 2), 1);
+        T.SN = reshape(T.SN, size(T.SN, 1) * size(T.SN, 2), 1);
+        T.BN = reshape(T.BN, size(T.BN, 1) * size(T.BN, 2), 1);
+        
+        % normalize IPI data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'IPI'}, 'sub');
+        
+        % open figure
+        if nargin>1; figure('Name',sprintf('N-1 vs IPI analysis - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('N-1 vs IPI analysis - group (N=%d)',ns)); end
+        set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
+        
+        title('IPI profile across 12 blocks'); hold on;
+        plt.line([T.BN T.IPInum], T.normIPI, 'style',darkgraysty);
+        xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
+        %%
+        
         %-------------------------------------------------------------------------------------------------------------------------------------
         % create summary table for IPI profile
         T=tapply(D, {'SN', 'isRep'},...
