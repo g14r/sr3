@@ -173,25 +173,24 @@ switch (what)
             B = [];
             for b = 1:max(D.BN)
                 T = getrow(D, D.BN==b);
-                %rn = 0;
+                rn = 0;
                 
-                %-------------------------------------------------------------------------------------------------------------------------------------
-                % detect same first finger (sff) in different sequences
                 T.sff = zeros(numel(T.TN), 1);
                 for t = 2:numel(T.sff)
                     
-                    %                     %-------------------------------------------------------------------------------------------------------------------------------------
-                    %                     % check that repetitions haven't been preceded by an error
-                    %                     if T.seqNum(t)==T.seqNum(t-1) && T.isError(t-1)==0
-                    %                         rn = rn + 1;
-                    %                         T.isRep(t) = 1;
-                    %                     else
-                    %                         rn = 0;
-                    %                         T.isRep(t) = 0;
-                    %                     end
-                    %                     T.repNum(t) = rn;
+                    %-------------------------------------------------------------------------------------------------------------------------------------
+                    % check that repetitions haven't been preceded by an error
+                    if T.seqNum(t)==T.seqNum(t-1) && T.isError(t-1)==0
+                        rn = rn + 1;
+                        T.isRep(t) = 1;
+                    else
+                        rn = 0;
+                        T.isRep(t) = 0;
+                    end
+                    T.repNum(t) = rn;
                     
-                    
+                    %-------------------------------------------------------------------------------------------------------------------------------------
+                    % detect same first finger (sff) in different sequences
                     if (T.isRep(t) == 1)
                         % repetition
                         T.sff(t) = 2;
@@ -205,6 +204,7 @@ switch (what)
                         error('This transition does not fall into any of the defined categories!');
                     end
                 end
+                
                 %-------------------------------------------------------------------------------------------------------------------------------------
                 % detect same middle transition (smt) in different sequences
                 T.smt = zeros(numel(T.TN), 1);
@@ -222,6 +222,7 @@ switch (what)
                         error('This transition does not fall into any of the defined categories!');
                     end
                 end
+                
                 %-------------------------------------------------------------------------------------------------------------------------------------
                 % detect same middle transition (smt_fls) in different sequences
                 % with the first and last numbers swapped
@@ -241,6 +242,7 @@ switch (what)
                         error('This transition does not fall into any of the defined categories!');
                     end
                 end
+                
                 %-------------------------------------------------------------------------------------------------------------------------------------
                 % detect same last finger and first of next seq (slf)
                 T.slf = zeros(numel(T.TN), 1);
@@ -256,6 +258,7 @@ switch (what)
                         T.slf(t) = 0;
                     end
                 end
+                
                 %-------------------------------------------------------------------------------------------------------------------------------------
                 % detect same finger transition (sft) in different sequences
                 T.sft = zeros(numel(T.TN), 1);
@@ -271,7 +274,7 @@ switch (what)
                     for i = 2:(numel(seq2))
                         tm2(str2double(seq2(i)), str2double(seq2(i-1))) = 1;
                     end
-                    %
+                    
                     if (T.isRep(t) == 1)
                         % repetition
                         T.sft(t) = 123;
